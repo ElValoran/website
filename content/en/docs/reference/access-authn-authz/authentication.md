@@ -100,7 +100,23 @@ This would create a CSR for the username "jbeda", belonging to two groups, "app1
 
 See [Managing Certificates](/docs/tasks/administer-cluster/certificates/) for how to generate a client cert.
 
-### Static token file
+### Bearer Token
+
+#### Putting a bearer token in a request
+
+When using bearer token authentication from an http client, the API
+server expects an `Authorization` header with a value of `Bearer
+<token>`.  The bearer token must be a character sequence that can be
+put in an HTTP header value using no more than the encoding and
+quoting facilities of HTTP.  For example: if the bearer token is
+`31ada4fd-adec-460c-809a-9e56ceb75269` then it would appear in an HTTP
+header as shown below.
+
+```http
+Authorization: Bearer 31ada4fd-adec-460c-809a-9e56ceb75269
+```
+
+#### Static token file
 
 The API server reads bearer tokens from a file when given the `--token-auth-file=SOMEFILE` option
 on the command line. Currently, tokens last indefinitely, and the token list cannot be
@@ -117,21 +133,7 @@ token,user,uid,"group1,group2,group3"
 ```
 {{< /note >}}
 
-#### Putting a bearer token in a request
-
-When using bearer token authentication from an http client, the API
-server expects an `Authorization` header with a value of `Bearer
-<token>`.  The bearer token must be a character sequence that can be
-put in an HTTP header value using no more than the encoding and
-quoting facilities of HTTP.  For example: if the bearer token is
-`31ada4fd-adec-460c-809a-9e56ceb75269` then it would appear in an HTTP
-header as shown below.
-
-```http
-Authorization: Bearer 31ada4fd-adec-460c-809a-9e56ceb75269
-```
-
-### Bootstrap tokens
+#### Bootstrap tokens
 
 {{< feature-state for_k8s_version="v1.18" state="stable" >}}
 
@@ -166,7 +168,7 @@ Please see [Bootstrap Tokens](/docs/reference/access-authn-authz/bootstrap-token
 documentation on the Bootstrap Token authenticator and controllers along with
 how to manage these tokens with `kubeadm`.
 
-### Service account tokens
+#### Service account tokens
 
 A service account is an automatically enabled authenticator that uses signed
 bearer tokens to verify requests. The plugin takes two optional flags:
@@ -247,7 +249,7 @@ Secrets can authenticate as the service account. Be cautious when granting permi
 to service accounts and read or write capabilities for Secrets.
 {{< /warning >}}
 
-### OpenID Connect Tokens
+#### OpenID Connect Tokens
 
 [OpenID Connect](https://openid.net/connect/) is a flavor of OAuth2 supported by
 some OAuth2 providers, notably Microsoft Entra ID, Salesforce, and Google.
@@ -311,9 +313,9 @@ very scalable solution for authentication. It does offer a few challenges:
 1. To authenticate to the Kubernetes dashboard, you must use the `kubectl proxy` command or a reverse proxy
    that injects the `id_token`.
 
-#### Configuring the API Server
+##### Configuring the API Server
 
-##### Using flags
+###### Using flags
 
 To enable the plugin, configure the following flags on the API server:
 
@@ -329,7 +331,7 @@ To enable the plugin, configure the following flags on the API server:
 | `--oidc-ca-file` | The path to the certificate for the CA that signed your identity provider's web certificate.  Defaults to the host's root CAs. | `/etc/kubernetes/ssl/kc-ca.pem` | No |
 | `--oidc-signing-algs` | The signing algorithms accepted. Default is "RS256". | `RS512` | No |
 
-##### Using Authentication Configuration
+###### Using Authentication Configuration
 
 {{< feature-state for_k8s_version="v1.29" state="alpha" >}}
 
@@ -651,9 +653,9 @@ Setup instructions for specific systems:
 - [Dex](https://dexidp.io/docs/kubernetes/)
 - [OpenUnison](https://www.tremolosecurity.com/orchestra-k8s/)
 
-#### Using kubectl
+##### Using kubectl
 
-##### Option 1 - OIDC Authenticator
+###### Option 1 - OIDC Authenticator
 
 The first option is to use the kubectl `oidc` authenticator, which sets the `id_token` as a bearer token
 for all requests and refreshes the token once it expires. After you've logged into your provider, use
@@ -706,7 +708,7 @@ users:
 Once your `id_token` expires, `kubectl` will attempt to refresh your `id_token` using your `refresh_token`
 and `client_secret` storing the new values for the `refresh_token` and `id_token` in your `.kube/config`.
 
-##### Option 2 - Use the `--token` Option
+###### Option 2 - Use the `--token` Option
 
 The `kubectl` command lets you pass in a token using the `--token` option.  Copy and paste the `id_token` into this option:
 
@@ -714,7 +716,7 @@ The `kubectl` command lets you pass in a token using the `--token` option.  Copy
 kubectl --token=eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL21sYi50cmVtb2xvLmxhbjo4MDQzL2F1dGgvaWRwL29pZGMiLCJhdWQiOiJrdWJlcm5ldGVzIiwiZXhwIjoxNDc0NTk2NjY5LCJqdGkiOiI2RDUzNXoxUEpFNjJOR3QxaWVyYm9RIiwiaWF0IjoxNDc0NTk2MzY5LCJuYmYiOjE0NzQ1OTYyNDksInN1YiI6Im13aW5kdSIsInVzZXJfcm9sZSI6WyJ1c2VycyIsIm5ldy1uYW1lc3BhY2Utdmlld2VyIl0sImVtYWlsIjoibXdpbmR1QG5vbW9yZWplZGkuY29tIn0.f2As579n9VNoaKzoF-dOQGmXkFKf1FMyNV0-va_B63jn-_n9LGSCca_6IVMP8pO-Zb4KvRqGyTP0r3HkHxYy5c81AnIh8ijarruczl-TK_yF5akjSTHFZD-0gRzlevBDiH8Q79NAr-ky0P4iIXS8lY9Vnjch5MF74Zx0c3alKJHJUnnpjIACByfF2SCaYzbWFMUNat-K1PaUk5-ujMBG7yYnr95xD-63n8CO8teGUAAEMx6zRjzfhnhbzX-ajwZLGwGUBT4WqjMs70-6a7_8gZmLZb2az1cZynkFRj2BaCkVT3A2RrjeEwZEtGXlMqKJ1_I2ulrOVsYx01_yD35-rw get nodes
 ```
 
-### Webhook Token Authentication
+#### Webhook Token Authentication
 
 Webhook authentication is a hook for verifying bearer tokens.
 
